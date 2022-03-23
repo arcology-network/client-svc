@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version
+      - image: circleci/golang:1.13
+
+    working_directory: /go/src/github.com/arcology-network/client-svc
+    steps:
+      - checkout
+      - run: sudo apt update
+      - run: sudo apt install libboost-all-dev
+      - run: sudo apt install libtbb-dev
+      - run: go env -w GOPRIVATE=github.com/arcology-network
+      - run: bash .circleci/download_artifacts.sh
+      - run: sudo ln -s /go/src/github.com/arcology-network/client-svc/libarbitrator.so /usr/local/lib
+      - run: go build -i -tags 'nosproc nometri' ./...
+      - run: export LD_LIBRARY_PATH=/usr/local/lib && go test -v ./mock
